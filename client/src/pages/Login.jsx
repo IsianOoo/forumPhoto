@@ -8,9 +8,14 @@ export default function Login() {
         password:'',
     })
 
-	const loginUser = (e) => {
+	const loginUser = async (e) => {
 		e.preventDefault()
-		axios.get('/')
+		const {email,password} = data
+		try {
+			const {data} = await axios.post('/login')
+		} catch (error) {
+			
+		}
 	}
 	return (
 		<div>
