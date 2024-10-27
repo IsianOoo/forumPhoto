@@ -3,7 +3,7 @@ const Photo = require('../models/photo')
 const createPhoto = async (req, res) => {
 	try {
 		const { title, description, imageUrl } = req.body
-		const photo = await Photo.create({ title, description, imageUrl, userId: req.user._id })
+		const photo = await Photo.create({ title, description, imageUrl, userId: req.userId })
 		res.json(photo)
 	} catch (error) {
 		console.log(req.user)
