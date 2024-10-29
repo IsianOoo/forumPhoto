@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 export default function Navbar() {
 	return (
-		<nav className='bg-gray-500'>
+		<nav className='bg-gray-200 bg-opacity-100'>
 			<div className='max-w-7xl mx-auto px-3'>
 				<div className='flex items-center justify-between h-14'>
           <div className='shrink-0'>
