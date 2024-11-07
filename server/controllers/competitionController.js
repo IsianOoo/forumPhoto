@@ -2,9 +2,32 @@ const Competition = require('../models/competition')
 const Application = require('../models/application')
 const User = require('../models/user')
 const permitOnlyAdmin = require('../middleware/adminPermissionMiddleware');
+const cron = require('node-cron');
+
+cron.schedule('*/10 * * * * *', async () => {
+	try {
+		const endedCompetitions = await Competition.find({
+			endDate: { $lte: new Date() },
+			winner: { $exists: false }
+		});
+
+		for (const competition of endedCompetitions) {
+			const applications = await Application.find({ competitionId: competition._id }).sort({ votes: -1 });
+
+			if (applications.length > 0) {
+				const winner = applications[0]; 
+				competition.winner = winner.userId; 
+				await competition.save();
+				console.log(`Winner announced for competition ${competition._id}`);
+			}
+		}
+	} catch (error) {
+		console.error('Error selecting winner:', error);
+	}
+});
 
 const createCompetition = async (req, res) => {
-	permitOnlyAdmin(req,res)
+	if (req.role!='admin') return res.status(403).json({ error: 'Forbidden' })
 	try {
 		const { title, description, prize, endDate } = req.body
 
