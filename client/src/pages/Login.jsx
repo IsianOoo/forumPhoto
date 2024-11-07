@@ -56,11 +56,11 @@ export default function Login() {
 				<button
 					type='submit '
 					className='bg-pink-400 text-white font-semibold rounded-md w-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-gray-700'>
-					Loguj
+					Log in
 				</button>
 				<p className='text-sm text-gray-500 mt-4 text-center'>
 					Don't have an account?{' '}
-					<a href='#' className='text-pink-400 hover:underline'>
+					<a href='/register' className='text-pink-400 hover:underline'>
 						Sign up
 					</a>
 				</p>
