@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-const applicationSchema = new Schema({
+const applicationVotesSchema = new Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -17,13 +17,9 @@ const applicationSchema = new Schema({
         ref: 'Photo',
         required: true
     },
-    votes: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    }]
 
 
 });
 
-const ApplicationModel = mongoose.model('Application', applicationSchema);
-module.exports = ApplicationModel;
+const ApplicationVotesModel = mongoose.model('ApplicationVotes', applicationVotesSchema);
+module.exports = ApplicationVotesModel;

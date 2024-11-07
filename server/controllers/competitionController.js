@@ -1,7 +1,10 @@
 const Competition = require('../models/competition')
 const Application = require('../models/application')
+const User = require('../models/user')
+const permitOnlyAdmin = require('../middleware/adminPermissionMiddleware');
 
 const createCompetition = async (req, res) => {
+	permitOnlyAdmin(req,res)
 	try {
 		const { title, description, prize, endDate } = req.body
 
@@ -44,15 +47,27 @@ const joinCompetition = async (req, res) => {
 }
 
 const getApplications = async (req, res) => {
-    const competitions = await Competition.find({competitionId:req.params.id})
-    res.json({competitions})
+    const application = await Application.find({competitionId:req.params.id})
+    res.json({application})
 }
 
 const getUsersApplications = async (req, res) =>{
-    const competitions = await Competition.find({userId:req.userId})
-    res.json({competitions})
+    const applications = await Application.find({userId:req.userId})
+    res.json({applications})
 }
 
+const applicationVote = async (req, res) =>{
+	const user = await User.findById({_id:req.userId})
+	const application = await Application.findById({_id:req.params.id})
+	const joined = application.votes.some((vote)=>{return vote._id == req.userId})
+
+	if(joined){
+		return res.json({message: "You already voted"});
+	}
+	application.votes.push({_id: req.userId});
+	await application.save();
+	res.json({})
+}
 
 module.exports = {
 	createCompetition,
@@ -63,5 +78,6 @@ module.exports = {
 	joinCompetition,
     getApplications,
     getUsersApplications,
+	applicationVote,
 
 }

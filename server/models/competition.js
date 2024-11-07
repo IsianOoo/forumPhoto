@@ -16,7 +16,10 @@ const competitionSchema = new Schema({
     createdAt: {
         type: Date,
         default: Date.now
-    }
+    },    winner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
 });
 
 const CompetitionModel = mongoose.model('Competition', competitionSchema);
