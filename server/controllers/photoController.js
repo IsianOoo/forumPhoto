@@ -140,4 +140,16 @@ const deletePhoto = async (req, res) => {
     res.json({ message: 'Photo deleted successfully' })
 }
 
-module.exports = { createPhoto,likePhoto,addComment, getPhotos, getPhotoById, updatePhoto, deletePhoto, upload,getPhotoImage}
+const getPhotoComments = async (req, res) => {
+    try {
+        const photo = await Photo.findById(req.params.id);
+        if (!photo) {
+            return res.status(404).json({ error: "Photo not found" });
+        }
+        res.json(photo.comments);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = {getPhotoComments, createPhoto,likePhoto,addComment, getPhotos, getPhotoById, updatePhoto, deletePhoto, upload,getPhotoImage}

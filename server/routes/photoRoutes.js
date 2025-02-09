@@ -1,5 +1,5 @@
 const express = require('express');
-const {likePhoto, addComment, getPhotoImage, createPhoto, getPhotos, getPhotoById, updatePhoto, deletePhoto, upload } = require('../controllers/photoController');
+const {getPhotoComments, likePhoto, addComment, getPhotoImage, createPhoto, getPhotos, getPhotoById, updatePhoto, deletePhoto, upload } = require('../controllers/photoController');
 const router = express.Router();
 const verifyToken = require('../middleware/authMiddleware');
 
@@ -199,5 +199,40 @@ router.use(verifyToken).post('/:id/like', likePhoto);
  */
 router.use(verifyToken).post('/:id/comment', addComment);
 
+/**
+ * @swagger
+ * /photo/{id}/comments:
+ *   get:
+ *     summary: Pobierz wszystkie komentarze do zdjęcia
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista komentarzy do zdjęcia
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   userId:
+ *                     type: string
+ *                     description: ID użytkownika, który dodał komentarz
+ *                   content:
+ *                     type: string
+ *                     description: Treść komentarza
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                     description: Data dodania komentarza
+ *       404:
+ *         description: Zdjęcie nie znalezione
+ */
+router.get('/:id/comments', getPhotoComments);
 
 module.exports = router;
