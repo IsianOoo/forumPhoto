@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 export default function Navbar() {
 	return (
-		<nav className='bg-gray-200 bg-opacity-100'>
+		<nav className='bg-gray-200 bg-opacity-100 '>
 			<div className='max-w-7xl mx-auto px-3'>
 				<div className='flex items-center justify-between h-14'>
           <div className='shrink-0'>
@@ -15,7 +15,7 @@ export default function Navbar() {
 							<a href='/' className='text-gray-500 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100  hover:border-pink-400'>Home</a>
 						</li>
 						<li>
-							<a href='#' className='text-gray-500 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100  hover:border-pink-400'>Photos</a>
+							<a href='/photo' className='text-gray-500 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100  hover:border-pink-400'>Photos</a>
 						</li>
 						<li>
 							<a href='#' className='text-gray-500 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100  hover:border-pink-400'>Courses</a>
