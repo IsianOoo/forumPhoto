@@ -1,26 +1,29 @@
 const mongoose = require('mongoose')
-const {Schema} = mongoose
+const { Schema } = mongoose
 
 const commentSchema = new Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',  
+        ref: 'User',
         required: true
     },
     content: {
-        type: String,   
+        type: String,
         required: true
     },
     createdAt: {
         type: Date,
-        default: Date.now  
+        default: Date.now
     }
 });
 
-const photoSchema = new Schema({
+const photoSchema = new mongoose.Schema({
     title: String,
     description: String,
-    imageUrl: String,
+    image: {
+        data: Buffer,   
+        contentType: String,  
+    },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -29,13 +32,7 @@ const photoSchema = new Schema({
     createdAt: {
         type: Date,
         default: Date.now
-    },
-    likes: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    }],
-    comments: [commentSchema]
-
+    }
 });
 
 const PhotoModel = mongoose.model('Photo', photoSchema);
