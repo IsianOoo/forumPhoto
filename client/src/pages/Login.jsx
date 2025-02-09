@@ -3,6 +3,8 @@ import { useState } from 'react'
 import axios from 'axios'
 import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
+import { useContext } from 'react'
+import { UserContext } from '../../context/userContext'
 
 export default function Login() {
 	const navigate = useNavigate()
@@ -11,7 +13,8 @@ export default function Login() {
 		password: '',
 	})
 
-	const [isLogin,setIsLogin] = useState(false)
+	const [isLogin, setIsLogin] = useState(false)
+	const { setUser } = useContext(UserContext)
 
 	const loginUser = async (e) => {
 		e.preventDefault()
@@ -24,13 +27,17 @@ export default function Login() {
 
 			if (data.error) {
 				toast.error(data.error)
-				setIsLogin(false)
 			} else {
+				console.log('Login response:', data)
+				localStorage.setItem('token', data.token) // Zapis tokena
+				axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
 				setData({})
 				navigate('/')
-				setIsLogin(true)
+				setUser(data)
 			}
-		} catch (error) {}
+		} catch (error) {
+			toast.error('Login failed')
+		}
 	}
 	return (
 		<div className='flex items-center justify-center min-h-screen bg-gray-100'>

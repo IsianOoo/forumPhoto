@@ -1,33 +1,55 @@
 import { Link } from 'react-router-dom'
+import { UserContext } from '../../context/userContext'
+import {useContext} from 'react'
 export default function Navbar() {
+
+	const {user,logout,loading} = useContext(UserContext)
+	if(loading) return null
 	return (
-		<nav className='bg-gray-200 bg-opacity-100 '>
+		<nav className='bg-gray-200 bg-opacity-100'>
 			<div className='max-w-7xl mx-auto px-3'>
 				<div className='flex items-center justify-between h-14'>
-          <div className='shrink-0'>
-					<a href='/' class='text-pink-400 text-xl font-bold'>
-						Forum Photo
-					</a>
-          </div>
+					<div className='shrink-0'>
+						<Link to='/' className='text-pink-400 text-xl font-bold'>
+							Forum Photo
+						</Link>
+					</div>
 
 					<ul className='flex space-x-7'>
 						<li>
-							<a href='/' className='text-gray-500 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100  hover:border-pink-400'>Home</a>
+							<Link to='/' className='text-gray-500 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100 hover:border-pink-400'>Home</Link>
 						</li>
 						<li>
-							<a href='/photo' className='text-gray-500 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100  hover:border-pink-400'>Photos</a>
+							<Link to='/photo' className='text-gray-500 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100 hover:border-pink-400'>Photos</Link>
 						</li>
 						<li>
-							<a href='#' className='text-gray-500 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100  hover:border-pink-400'>Courses</a>
+							<Link to='/courses' className='text-gray-500 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100 hover:border-pink-400'>Courses</Link>
 						</li>
 						<li>
-							<a href='#' className='text-gray-500 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100  hover:border-pink-400'>Competition</a>
+							<Link to='/competition' className='text-gray-500 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100 hover:border-pink-400'>Competition</Link>
 						</li>
 					</ul>
 
 					<div className='flex space-x-4'>
-						<a href='/register' className='text-gray-500 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100  hover:border-pink-400 font-bold'>Sign Up</a>
-						<a href='/login 'className='text-gray-400 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100  hover:border-pink-400'>Log in</a>
+						{user ? (
+							<>
+								<Link to='/profile' className='text-gray-500 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100 hover:border-pink-400 font-bold'>
+									Profile
+								</Link>
+								<button onClick={logout} className='text-gray-400 hover:text-red-400 hover:border-b-2 py-1 border-transparent transition-all duration-100 hover:border-red-400'>
+									Log out
+								</button>
+							</>
+						) : (
+							<>
+								<Link to='/register' className='text-gray-500 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100 hover:border-pink-400 font-bold'>
+									Sign Up
+								</Link>
+								<Link to='/login' className='text-gray-400 hover:text-pink-400 hover:border-b-2 py-1 border-transparent transition-all duration-100 hover:border-pink-400'>
+									Log in
+								</Link>
+							</>
+						)}
 					</div>
 				</div>
 			</div>

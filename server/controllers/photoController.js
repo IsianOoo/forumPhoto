@@ -21,6 +21,7 @@ const createPhoto = async (req, res) => {
             userId: req.userId
         });
 
+
         await newPhoto.save();
         res.status(201).json({ message: 'Zdjęcie zapisane w bazie!', photo: newPhoto });
     } catch (error) {
@@ -33,13 +34,14 @@ const createPhoto = async (req, res) => {
 
 const getPhotos = async (req, res) => {
     try {
-        const photos = await Photo.find().select('_id title description image.contentType userId createdAt');
+        const photos = await Photo.find().select('_id title description userId createdAt');
+
         
         const formattedPhotos = photos.map(photo => ({
             _id: photo._id,
             title: photo.title,
             description: photo.description,
-            contentType: photo.image.contentType, 
+            imageUrl: `http://localhost:8000/photo/${photo._id}/view`,
             userId: photo.userId,
             createdAt: photo.createdAt
         }));
@@ -49,8 +51,25 @@ const getPhotos = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+const getPhotoImage = async (req, res) => {
+    try {
+        const photo = await Photo.findById(req.params.id);
+        if (!photo || !photo.image.data) {
+            return res.status(404).json({ error: "Photo not found" });
+        }
 
+        res.set({
+            'Content-Type': photo.image.contentType,
+            'Cache-Control': 'public, max-age=31536000', 
+            'Access-Control-Allow-Origin': '*'
+        });
 
+        res.send(photo.image.data);
+    } catch (error) {
+        console.error("Error fetching image:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
 const getPhotoById = async (req, res) => {
     try {
         const photo = await Photo.findById(req.params.id);
@@ -80,4 +99,4 @@ const deletePhoto = async (req, res) => {
     res.json({ message: 'Photo deleted successfully' })
 }
 
-module.exports = { createPhoto, getPhotos, getPhotoById, updatePhoto, deletePhoto, upload}
+module.exports = { createPhoto, getPhotos, getPhotoById, updatePhoto, deletePhoto, upload,getPhotoImage}
