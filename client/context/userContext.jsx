@@ -18,6 +18,7 @@ const logout = async () => {
     try {
       await axios.post('/auth/logout');
       setUser(null);
+      window.location.href = '/';
     } catch (error) {
       console.error("Logout failed", error);
     }
