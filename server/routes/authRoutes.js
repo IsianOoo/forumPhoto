@@ -2,17 +2,16 @@ const express = require('express')
 const router = express.Router()
 const cors = require('cors')
 const verifyToken = require('../middleware/authMiddleware')
-const {logoutUser , test,registerUser,loginUser,getProfile} = require('../controllers/authController')
-
+const { logoutUser, test, registerUser, loginUser, getProfile } = require('../controllers/authController')
 
 router.use(
-    cors({
-        credentials:true,
-        origin:'http://localhost:5173'
-    })
+	cors({
+		credentials: true,
+		origin: 'http://localhost:5173',
+	})
 )
 
-router.get('/',test)
+router.get('/', test)
 
 /**
  * @swagger
@@ -77,7 +76,7 @@ router.get('/',test)
  *       400:
  *         description: Błąd walidacji lub użytkownik już istnieje
  */
-router.post('/register', registerUser);
+router.post('/register', registerUser)
 
 /**
  * @swagger
@@ -104,7 +103,7 @@ router.post('/register', registerUser);
  *       401:
  *         description: Niepoprawne dane logowania
  */
-router.post('/login', loginUser);
+router.post('/login', loginUser)
 
 /**
  * @swagger
@@ -119,8 +118,19 @@ router.post('/login', loginUser);
  *       401:
  *         description: Brak autoryzacji
  */
-router.use(verifyToken).get('/profile',getProfile)
+router.use(verifyToken).get('/profile', getProfile)
 
-router.post('/logout', verifyToken, logoutUser);
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Wylogowanie użytkownika
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Użytkownik został pomyślnie wylogowany
+ */
+router.post('/logout', verifyToken, logoutUser)
 
 module.exports = router
