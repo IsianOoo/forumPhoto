@@ -1,5 +1,5 @@
 const express = require('express');
-const { getPhotoImage, createPhoto, getPhotos, getPhotoById, updatePhoto, deletePhoto, upload } = require('../controllers/photoController');
+const {likePhoto, addComment, getPhotoImage, createPhoto, getPhotos, getPhotoById, updatePhoto, deletePhoto, upload } = require('../controllers/photoController');
 const router = express.Router();
 const verifyToken = require('../middleware/authMiddleware');
 
@@ -103,5 +103,9 @@ router.use(verifyToken).put('/:id', updatePhoto);
  *         description: Zdjęcie nie znalezione
  */
 router.use(verifyToken).delete('/:id', deletePhoto);
+
+router.use(verifyToken).post('/:id/like', likePhoto);
+router.use(verifyToken).post('/:id/comment', addComment);
+
 
 module.exports = router;

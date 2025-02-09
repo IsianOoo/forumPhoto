@@ -29,6 +29,14 @@ const photoSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    likes: { type: [mongoose.Schema.Types.ObjectId], ref: 'User', default: [] },
+    comments: [
+        {
+            userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            content: String,
+            createdAt: { type: Date, default: Date.now }
+        }
+    ],
     createdAt: {
         type: Date,
         default: Date.now
