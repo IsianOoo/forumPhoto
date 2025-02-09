@@ -11,6 +11,8 @@ export default function Login() {
 		password: '',
 	})
 
+	const [isLogin,setIsLogin] = useState(false)
+
 	const loginUser = async (e) => {
 		e.preventDefault()
 		const { email, password } = data
@@ -22,9 +24,11 @@ export default function Login() {
 
 			if (data.error) {
 				toast.error(data.error)
+				setIsLogin(false)
 			} else {
 				setData({})
 				navigate('/')
+				setIsLogin(true)
 			}
 		} catch (error) {}
 	}
