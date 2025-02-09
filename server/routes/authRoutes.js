@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const cors = require('cors')
 const verifyToken = require('../middleware/authMiddleware')
-const {test,registerUser,loginUser,getProfile} = require('../controllers/authController')
+const {logoutUser , test,registerUser,loginUser,getProfile} = require('../controllers/authController')
 
 
 router.use(
@@ -120,5 +120,7 @@ router.post('/login', loginUser);
  *         description: Brak autoryzacji
  */
 router.use(verifyToken).get('/profile',getProfile)
+
+router.post('/logout', verifyToken, logoutUser);
 
 module.exports = router

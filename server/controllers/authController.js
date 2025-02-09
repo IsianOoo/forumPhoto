@@ -83,9 +83,15 @@ const getProfile =(req,res)=>{
 	}
 }
 
+const logoutUser = (req, res) => {
+    res.status(200).json({ message: "Logged out successfully" });
+};
+
+
 module.exports = {
 	test,
 	registerUser,
 	loginUser,
 	getProfile,
+	logoutUser,
 }
