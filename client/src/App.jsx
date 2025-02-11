@@ -10,6 +10,8 @@ import {Toaster} from'react-hot-toast'
 import { UserContextProvider } from '../context/userContext'
 import Photos from './pages/Photos'
 import PrivateRoute from './components/PrivateRoute'
+import Courses from './pages/Courses'
+import Profile from './pages/Profile'
 
 axios.defaults.baseURL = 'http://localhost:8000'
 axios.defaults.withCredentials = true
@@ -38,7 +40,7 @@ function App() {
           path="/courses"
           element={
             <PrivateRoute>
-              <div>Courses Page</div> 
+              <Courses /> 
             </PrivateRoute>
           }
         />
@@ -47,6 +49,14 @@ function App() {
           element={
             <PrivateRoute>
               <div>Competition Page</div> 
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <Profile />
             </PrivateRoute>
           }
         />

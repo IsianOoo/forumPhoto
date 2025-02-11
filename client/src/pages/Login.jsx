@@ -29,7 +29,7 @@ export default function Login() {
 				toast.error(data.error)
 			} else {
 				console.log('Login response:', data)
-				localStorage.setItem('token', data.token) // Zapis tokena
+				localStorage.setItem('token', data.token) 
 				axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
 				setData({})
 				navigate('/')
