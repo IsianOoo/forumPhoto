@@ -235,4 +235,35 @@ router.use(verifyToken).post('/:id/comment', addComment);
  */
 router.get('/:id/comments', getPhotoComments);
 
+/**
+ * @swagger
+ * /photo/{photoId}/comment/{commentId}:
+ *   delete:
+ *     summary: Usuń komentarz
+ *     description: Pozwala właścicielowi komentarza usunąć go ze zdjęcia
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: photoId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID zdjęcia, z którego usuwany jest komentarz
+ *       - name: commentId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID komentarza do usunięcia
+ *     responses:
+ *       200:
+ *         description: Komentarz został pomyślnie usunięty
+ *       403:
+ *         description: Użytkownik nie może usunąć tego komentarza
+ *       404:
+ *         description: Zdjęcie lub komentarz nie znaleziony
+ */
+router.delete('/:photoId/comment/:commentId', verifyToken, deleteComment);
+
 module.exports = router;

@@ -152,4 +152,32 @@ const getPhotoComments = async (req, res) => {
     }
 };
 
-module.exports = {getPhotoComments, createPhoto,likePhoto,addComment, getPhotos, getPhotoById, updatePhoto, deletePhoto, upload,getPhotoImage}
+const deleteComment = async (req, res) => {
+    try {
+        const { photoId, commentId } = req.params;
+        const userId = req.user.id;
+
+        const photo = await Photo.findById(photoId);
+        if (!photo) {
+            return res.status(404).json({ error: "Photo not found" });
+        }
+
+        const comment = photo.comments.id(commentId);
+        if (!comment) {
+            return res.status(404).json({ error: "Comment not found" });
+        }
+
+        if (comment.userId.toString() !== userId) {
+            return res.status(403).json({ error: "You can only delete your own comments" });
+        }
+
+        comment.remove();
+        await photo.save();
+
+        res.json({ message: "Comment deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = {deleteComment, getPhotoComments, createPhoto,likePhoto,addComment, getPhotos, getPhotoById, updatePhoto, deletePhoto, upload,getPhotoImage}
