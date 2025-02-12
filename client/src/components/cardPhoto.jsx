@@ -59,7 +59,7 @@ export default function CardPhoto({ id, title, description, imageUrl, initialLik
 	}
 	return (
 		<div className='max-w-sm bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden'>
-			<img className='w-full h-48 object-cover' src={imageUrl} alt={title} />
+			<img className='w-full h-80 object-cover' src={imageUrl} alt={title} />
 			<div className='p-4'>
 				<h3 className='font-bold text-lg'>{title}</h3>
 				<p className='text-gray-600'>{description}</p>
