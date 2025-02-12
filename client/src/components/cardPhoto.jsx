@@ -12,10 +12,8 @@ export default function CardPhoto({ id, title, description, imageUrl, initialLik
 		const fetchComments = async () => {
 			try {
 				const response = await axios.get(`/photo/${id}/comments`)
-				console.log('Fetched comments:', response.data)
 				setComments(response.data)
 			} catch (error) {
-				console.error('Error fetching comments:', error)
 				toast.error('Error fetching comments.')
 			}
 		}
@@ -25,25 +23,27 @@ export default function CardPhoto({ id, title, description, imageUrl, initialLik
 	const handleLike = async () => {
 		try {
 			const response = await axios.post(`/photo/${id}/like`)
-			console.log('Like response:', response.data)
 			setLikes(response.data.likes)
 			toast.success('Photo liked!')
 		} catch (error) {
-			console.error('Error liking photo:', error)
 			toast.error('Error liking photo.')
 		}
 	}
 
 	const handleAddComment = async (e) => {
 		e.preventDefault()
+		if (!commentText.trim()) {
+            toast.error('Comment cannot be empty!');
+            return;
+        }
 		try {
 			const response = await axios.post(`/photo/${id}/comment`, { content: commentText })
-			console.log('Add comment response:', response.data)
 			setComments([...comments, response.data])
 			setCommentText('')
 			toast.success('Comment added!')
+			const updatedComments = await axios.get(`/photo/${id}/comments`)
+			setComments(updatedComments.data)
 		} catch (error) {
-			console.error('Error adding comment:', error)
 			toast.error('Error adding comment.')
 		}
 	}
@@ -76,13 +76,17 @@ export default function CardPhoto({ id, title, description, imageUrl, initialLik
 								<div>
 									<span className='font-semibold'>{comment.content}</span>
 									<br />
-									<span className='text-gray-500 text-sm'>Added by user {comment.userId}</span>
+									<span className='text-gray-500 text-sm'>
+									Added by {user && String(comment.userId) === String(user._id) ? 'you' : `user ${comment.userId}`}
+									</span>
 								</div>
-								{user && user._id === comment.userId && (
-									<button onClick={() => handleDeleteComment(comment._id)} className='text-red-500 text-sm'>
-										Delete
-									</button>
-								)}
+
+								{console.log("User ID:", user?._id, "Comment user ID:", comment.userId)}
+								{user && user._id && String(comment.userId) === String(user._id) && (
+                                    <button onClick={() => handleDeleteComment(comment._id)} className="text-red-500 text-sm">
+                                        Delete
+                                    </button>
+                                )}
 							</li>
 						))}
 					</ul>
