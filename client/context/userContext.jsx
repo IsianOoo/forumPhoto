@@ -1,6 +1,5 @@
 import axios from 'axios';
-import { createContext, useState } from 'react';
-
+import { createContext, useState, useEffect } from 'react';
 
 
 export const UserContext = createContext({});
@@ -8,9 +7,27 @@ export const UserContext = createContext({});
 export function UserContextProvider({ children }) {
   const [user, setUser] = useState(null);
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          const { data } = await axios.get('/auth/profile');
+          console.log("Fetched user:", data);
+          setUser(data);
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        setUser(null);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
   const login = async (email, password) => {
     try {
-      
       const { data } = await axios.post('/auth/login', { email, password });
       console.log("Login response:", data);
 
@@ -19,15 +36,13 @@ export function UserContextProvider({ children }) {
         return false;
       }
 
-      
       localStorage.setItem('token', data.token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
 
-      
       const profileResponse = await axios.get('/auth/profile');
       console.log("User profile response:", profileResponse.data);
-
       setUser(profileResponse.data);
+
       return true;
     } catch (error) {
       console.error("Login failed:", error.response?.data || error.message);

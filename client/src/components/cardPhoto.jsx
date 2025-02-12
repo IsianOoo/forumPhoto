@@ -45,7 +45,8 @@ export default function CardPhoto({ id, title, description, imageUrl, initialLik
         try {
             const response = await axios.post(`/photo/${id}/comment`, { content: commentText });
             console.log('Add comment response:', response.data);
-            setComments([...comments, response.data]);
+            const updatedComments = await axios.get(`/photo/${id}/comments`);
+            setComments(updatedComments.data);
             setCommentText('');
             toast.success('Comment added!');
         } catch (error) {
@@ -89,6 +90,10 @@ export default function CardPhoto({ id, title, description, imageUrl, initialLik
                                     </span>
                                 </div>
 
+                                {/* Debugowanie, sprawdzanie ID użytkownika */}
+                                {console.log("User ID:", user?._id, "Comment user ID:", comment.userId)}
+
+                                {/* Sprawdzenie, czy użytkownik może usunąć komentarz */}
                                 {user && user._id && String(comment.userId) === String(user._id) && (
                                     <button onClick={() => handleDeleteComment(comment._id)} className="text-red-500 text-sm">
                                         Delete
