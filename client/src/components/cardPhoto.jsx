@@ -42,6 +42,8 @@ export default function CardPhoto({ id, title, description, imageUrl, initialLik
 			setComments([...comments, response.data])
 			setCommentText('')
 			toast.success('Comment added!')
+			const updatedComments = await axios.get(`/photo/${id}/comments`)
+			setComments(updatedComments.data)
 		} catch (error) {
 			console.error('Error adding comment:', error)
 			toast.error('Error adding comment.')
@@ -76,8 +78,12 @@ export default function CardPhoto({ id, title, description, imageUrl, initialLik
 								<div>
 									<span className='font-semibold'>{comment.content}</span>
 									<br />
-									<span className='text-gray-500 text-sm'>Added by user {comment.userId}</span>
+									<span className='text-gray-500 text-sm'>
+										Added by {user && comment.userId === user._id ? 'you' : `user ${comment.userId}`}
+									</span>
 								</div>
+
+								{console.log("User ID:", user?._id, "Comment user ID:", comment.userId)}
 								{user && user._id === comment.userId && (
 									<button onClick={() => handleDeleteComment(comment._id)} className='text-red-500 text-sm'>
 										Delete
