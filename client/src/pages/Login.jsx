@@ -13,30 +13,36 @@ export default function Login() {
 		password: '',
 	})
 
-	const [isLogin, setIsLogin] = useState(false)
+	
 	const { setUser } = useContext(UserContext)
 
 	const loginUser = async (e) => {
 		e.preventDefault()
 		const { email, password } = data
 		try {
-			const { data } = await axios.post('/auth/login', {
-				email,
-				password,
-			})
+			const response = await axios.post('/auth/login', { email, password });
 
-			if (data.error) {
-				toast.error(data.error)
+			if (response.data.error) {
+				toast.error(response.data.error);
 			} else {
-				console.log('Login response:', data)
-				localStorage.setItem('token', data.token) 
-				axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
-				setData({})
-				navigate('/')
-				setUser(data)
-			}
+				console.log('Login response:', response.data);
+
+				
+				localStorage.setItem('token', response.data.token);
+				axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+
+				
+				setUser(response.data.user);
+
+				
+				setData({ email: '', password: '' });
+
+				
+				toast.success('Logged in successfully!');
+				navigate('/');}
 		} catch (error) {
-			toast.error('Login failed')
+			console.error('Login failed:', error.response?.data || error.message);
+			toast.error(error.response?.data?.message || 'Login failed');
 		}
 	}
 	return (
