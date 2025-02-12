@@ -1,5 +1,5 @@
 const express = require('express');
-const {getPhotoComments, likePhoto, addComment, getPhotoImage, createPhoto, getPhotos, getPhotoById, updatePhoto, deletePhoto, upload } = require('../controllers/photoController');
+const {getPhotoComments, likePhoto, addComment, getPhotoImage, createPhoto, getPhotos, getPhotoById, updatePhoto, deletePhoto, upload ,deleteComment} = require('../controllers/photoController');
 const router = express.Router();
 const verifyToken = require('../middleware/authMiddleware');
 
