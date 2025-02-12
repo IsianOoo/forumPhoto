@@ -18,29 +18,22 @@ const commentSchema = new Schema({
 });
 
 const photoSchema = new mongoose.Schema({
-    title: String,
-    description: String,
+    title: { type: String, required: true },
+    description: { type: String, required: true },
     image: {
-        data: Buffer,   
-        contentType: String,  
+        data: Buffer,
+        contentType: String
     },
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     likes: { type: [mongoose.Schema.Types.ObjectId], ref: 'User', default: [] },
     comments: [
         {
             userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-            content: String,
+            content: { type: String, required: true },
             createdAt: { type: Date, default: Date.now }
         }
     ],
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
+    createdAt: { type: Date, default: Date.now }
 });
 
 const PhotoModel = mongoose.model('Photo', photoSchema);

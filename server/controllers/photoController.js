@@ -6,24 +6,29 @@ const upload = multer({ storage: storage });
 
 const createPhoto = async (req, res) => {
     try {
-        if (!req.file) {
-            return res.status(400).json({ error: 'Brak pliku' });
+        const { title, description } = req.body;
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized. No user found." });
         }
 
-        const { title, description } = req.body;
+        if (!title || !description || !req.file) {
+            return res.status(400).json({ error: "Title, description, and image are required." });
+        }
+
         const newPhoto = new Photo({
             title,
             description,
             image: {
-                data: req.file.buffer, 
+                data: req.file.buffer,
                 contentType: req.file.mimetype
             },
-            userId: req.userId
+            userId: userId,
         });
 
-
         await newPhoto.save();
-        res.status(201).json({ message: 'Zdjęcie zapisane w bazie!', photo: newPhoto });
+        res.status(201).json({ message: "Photo uploaded successfully", photo: newPhoto });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
