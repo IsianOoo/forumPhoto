@@ -188,7 +188,7 @@ const deleteComment = async (req, res) => {
             return res.status(403).json({ error: "You can only delete your own comments" });
         }
 
-        comment.remove();
+        photo.comments.pull(commentId);
         await photo.save();
 
         res.json({ message: "Comment deleted successfully" });
