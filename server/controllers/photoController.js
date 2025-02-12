@@ -72,21 +72,33 @@ const likePhoto = async (req, res) => {
 
 const addComment = async (req, res) => {
     try {
+        const { id } = req.params;
         const { content } = req.body;
-        const photo = await Photo.findById(req.params.id);
-        if (!photo) {
-            return res.status(404).json({ error: "Photo not found" });
+        const userId = req.user?.id; 
+
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized. No user found." });
         }
 
-        const comment = {
-            userId: req.userId,
-            content,
-            createdAt: new Date()
+        if (!content) {
+            return res.status(400).json({ error: "Comment content is required." });
+        }
+
+        const photo = await Photo.findById(id);
+        if (!photo) {
+            return res.status(404).json({ error: "Photo not found." });
+        }
+
+        const newComment = {
+            userId: userId,
+            content: content,
+            createdAt: new Date(),
         };
 
-        photo.comments.push(comment);
+        photo.comments.push(newComment);
         await photo.save();
-        res.json({ message: "Comment added successfully", comments: photo.comments });
+
+        res.status(201).json({ message: "Comment added successfully", comment: newComment });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
