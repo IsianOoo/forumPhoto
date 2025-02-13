@@ -62,13 +62,21 @@ const getCourses = async (req, res) => {
 
 const getCourseById = async (req, res) => {
     try {
-        const course = await Course.findById(req.params.id).populate('instructor', 'name email');
+        const { id } = req.params;
+
+        if (!id || id.length !== 24) {
+            return res.status(400).json({ error: "Invalid course ID" });
+        }
+
+        const course = await Course.findById(id);
         if (!course) {
             return res.status(404).json({ error: "Course not found" });
         }
+
         res.json(course);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Error fetching course:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
