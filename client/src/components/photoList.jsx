@@ -1,46 +1,49 @@
 import axios from 'axios'
 import { toast } from 'react-hot-toast'
 import CardPhoto from './cardPhoto'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 
 export default function PhotoList() {
-	const [photos, setPhotos] = useState([])
+    const [photos, setPhotos] = useState([])
+    const hasFetched = useRef(false) 
 
-	useEffect(() => {
-		const fetchPhotos = async () => {
-			try {
-				toast('Fetching photos...')
-				const response = await axios.get('http://localhost:8000/photo')
+    useEffect(() => {
+        if (hasFetched.current) return 
+        hasFetched.current = true
 
-				setPhotos(response.data)
+        const fetchPhotos = async () => {
+            try {
+                toast('Fetching photos...')
+                const response = await axios.get('http://localhost:8000/photo')
 
-				toast.success('Photos loaded successfully!')
-			} catch (err) {
-				toast.error(`Error: ${err.message}`)
-			}
-		}
+                setPhotos(response.data)
 
-		fetchPhotos()
-	}, [])
+                toast.success('Photos loaded successfully!')
+            } catch (err) {
+                toast.error(`Error: ${err.message}`)
+            }
+        }
 
-	const handleDeletePhoto = (deletedPhotoId) => {
+        fetchPhotos()
+    }, [])
+
+    const handleDeletePhoto = (deletedPhotoId) => {
         setPhotos((prevPhotos) => prevPhotos.filter(photo => photo._id !== deletedPhotoId));
     }
 
-	return (
-		<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4'>
-			{photos.map((photo) => (
-				<CardPhoto
-					key={photo._id}
+    return (
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4'>
+            {photos.map((photo) => (
+                <CardPhoto
+                    key={photo._id}
                     id={photo._id}
-					title={photo.title}
-					description={photo.description}
-					imageUrl={photo.imageUrl}
-					initialLikes={photo.likes}
-					initialComments={photo.comments}
-					
-				/>
-			))}
-		</div>
-	)
+                    title={photo.title}
+                    description={photo.description}
+                    imageUrl={photo.imageUrl}
+                    initialLikes={photo.likes}
+                    initialComments={photo.comments}
+                />
+            ))}
+        </div>
+    )
 }
