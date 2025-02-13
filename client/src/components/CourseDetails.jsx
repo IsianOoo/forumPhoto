@@ -38,9 +38,9 @@ export default function CourseDetails() {
                 <img src={course.thumbnailUrl} alt={course.title} className="w-full max-w-2xl mt-6 rounded-lg shadow-lg" />
             )}
 
-            <div className="mt-6 bg-white shadow-lg p-6 rounded-lg">
+            <div className="mt-6 bg-white shadow-lg p-6 rounded-lg overflow-auto break-words">
                 <h3 className="text-xl font-semibold">Course Content</h3>
-                <p className="text-gray-600 mt-2">{course.content}</p>
+                <p className="text-gray-600 mt-2 break-words overflow-auto">{course.content}</p>
             </div>
         </div>
     );
