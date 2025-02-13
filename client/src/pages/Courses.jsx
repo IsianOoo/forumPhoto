@@ -1,4 +1,5 @@
 import CourseList from '../components/courseList'
+import { Link } from 'react-router-dom'
 
 export default function Courses() {
 	return (
@@ -26,6 +27,12 @@ export default function Courses() {
 						<p className='text-gray-500 text-sm'>High-quality lessons at a price that fits your budget.</p>
 					</div>
 				</div>
+			</div>
+
+			<div className='flex justify-center mb-6'>
+				<Link to='/course/add' className='bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition'>
+					➕ Add New Course
+				</Link>
 			</div>
 
 			<CourseList />
