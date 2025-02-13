@@ -13,6 +13,7 @@ import PrivateRoute from './components/PrivateRoute'
 import Courses from './pages/Courses'
 import Profile from './pages/Profile'
 import AddPhoto from './pages/AddPhoto'
+import EditPhoto from './components/EditPhoto'
 
 axios.defaults.baseURL = 'http://localhost:8000'
 axios.defaults.withCredentials = true
@@ -66,6 +67,14 @@ function App() {
 				element={
 					<PrivateRoute>
 						<AddPhoto />
+					</PrivateRoute>
+				}
+			/>
+      <Route
+				path="/photo/edit/:id"
+				element={
+					<PrivateRoute>
+						<EditPhoto />
 					</PrivateRoute>
 				}
 			/>

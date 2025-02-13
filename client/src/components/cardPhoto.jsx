@@ -3,6 +3,7 @@ import { useContext, useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import { UserContext } from '../../context/userContext'
 import { FaTrash, FaEdit } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 export default function CardPhoto({ id, title, description, imageUrl, initialLikes, initialComments}) {
 	const { user } = useContext(UserContext)
@@ -10,6 +11,8 @@ export default function CardPhoto({ id, title, description, imageUrl, initialLik
 	const [comments, setComments] = useState(initialComments || [])
 	const [commentText, setCommentText] = useState('')
 	const [photoUserId, setPhotoUserId] = useState(null);
+
+    const navigate = useNavigate();
 
 	useEffect(() => {
 		const fetchComments = async () => {
@@ -114,7 +117,7 @@ export default function CardPhoto({ id, title, description, imageUrl, initialLik
                             <button onClick={handleDeletePhoto} className="text-red-500">
                                 <FaTrash />
                             </button>
-                            <button className="text-blue-500">
+                            <button onClick={() => navigate(`/photo/edit/${id}`)} className="text-blue-500">
                                 <FaEdit />
                             </button>
                         </div>
