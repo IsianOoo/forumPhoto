@@ -23,6 +23,10 @@ export default function PhotoList() {
 		fetchPhotos()
 	}, [])
 
+	const handleDeletePhoto = (deletedPhotoId) => {
+        setPhotos((prevPhotos) => prevPhotos.filter(photo => photo._id !== deletedPhotoId));
+    }
+
 	return (
 		<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4'>
 			{photos.map((photo) => (
@@ -34,6 +38,7 @@ export default function PhotoList() {
 					imageUrl={photo.imageUrl}
 					initialLikes={photo.likes}
 					initialComments={photo.comments}
+					
 				/>
 			))}
 		</div>
