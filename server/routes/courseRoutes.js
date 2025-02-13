@@ -1,5 +1,5 @@
 const express = require('express');
-const {updateCourse, createCourse, getCourses, getCourseById, deleteCourse } = require('../controllers/courseController');
+const {getCourseThumbnail, updateCourse, createCourse, getCourses, getCourseById, deleteCourse } = require('../controllers/courseController');
 const router = express.Router();
 const verifyToken = require('../middleware/authMiddleware');
 const multer = require("multer");
@@ -173,6 +173,31 @@ router.delete("/:id", verifyToken, deleteCourse);
 router.put("/:id", verifyToken, upload.single("thumbnail"), updateCourse);
 
 
+/**
+ * @swagger
+ * /course/{id}/thumbnail:
+ *   get:
+ *     summary: Pobierz miniaturkę kursu
+ *     description: Pobiera obraz miniaturki kursu jako plik binarny.
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID kursu
+ *     responses:
+ *       200:
+ *         description: Zwraca plik obrazu miniaturki
+ *         content:
+ *           image/*:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: Miniaturka nie istnieje lub kurs nie znaleziony
+ */
+router.get('/:id/thumbnail', getCourseThumbnail);
 
 
 module.exports = router;

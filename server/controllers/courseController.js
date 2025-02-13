@@ -137,4 +137,24 @@ const deleteCourse = async (req, res) => {
     }
 };
 
-module.exports = {deleteCourse, updateCourse, createCourse, getCourses, getCourseById };
+const getCourseThumbnail = async (req, res) => {
+    try {
+        const course = await Course.findById(req.params.id);
+        if (!course || !course.thumbnail || !course.thumbnail.data) {
+            return res.status(404).json({ error: "Thumbnail not found" });
+        }
+
+        res.set({
+            'Content-Type': course.thumbnail.contentType,
+            'Cache-Control': 'public, max-age=31536000', 
+            'Access-Control-Allow-Origin': '*'
+        });
+
+        res.send(course.thumbnail.data);
+    } catch (error) {
+        console.error("Error fetching thumbnail:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = {getCourseThumbnail, deleteCourse, updateCourse, createCourse, getCourses, getCourseById };
