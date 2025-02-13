@@ -2,6 +2,10 @@ const express = require('express');
 const {updateCourse, createCourse, getCourses, getCourseById, deleteCourse } = require('../controllers/courseController');
 const router = express.Router();
 const verifyToken = require('../middleware/authMiddleware');
+const multer = require("multer");
+
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 /**
  * @swagger
@@ -13,7 +17,7 @@ const verifyToken = require('../middleware/authMiddleware');
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -26,6 +30,23 @@ const verifyToken = require('../middleware/authMiddleware');
  *               content:
  *                 type: string
  *                 description: Treść kursu
+ *               category:
+ *                 type: string
+ *                 description: Kategoria kursu
+ *               difficulty:
+ *                 type: string
+ *                 enum: [Beginner, Intermediate, Advanced]
+ *                 description: Poziom trudności
+ *               duration:
+ *                 type: number
+ *                 description: Czas trwania kursu (w godzinach)
+ *               language:
+ *                 type: string
+ *                 description: Język kursu
+ *               thumbnail:
+ *                 type: string
+ *                 format: binary
+ *                 description: Miniaturka kursu
  *     responses:
  *       201:
  *         description: Kurs został utworzony
@@ -34,7 +55,7 @@ const verifyToken = require('../middleware/authMiddleware');
  *       401:
  *         description: Brak autoryzacji
  */
-router.post("/", verifyToken, createCourse);
+router.post("/", verifyToken, upload.single("thumbnail"), createCourse);
 
 /**
  * @swagger
@@ -107,7 +128,7 @@ router.delete("/:id", verifyToken, deleteCourse);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -120,6 +141,23 @@ router.delete("/:id", verifyToken, deleteCourse);
  *               content:
  *                 type: string
  *                 description: Nowa treść kursu
+ *               category:
+ *                 type: string
+ *                 description: Kategoria kursu
+ *               difficulty:
+ *                 type: string
+ *                 enum: [Beginner, Intermediate, Advanced]
+ *                 description: Poziom trudności
+ *               duration:
+ *                 type: number
+ *                 description: Czas trwania kursu (w godzinach)
+ *               language:
+ *                 type: string
+ *                 description: Język kursu
+ *               thumbnail:
+ *                 type: string
+ *                 format: binary
+ *                 description: Miniaturka kursu
  *     responses:
  *       200:
  *         description: Kurs został pomyślnie zaktualizowany
@@ -132,7 +170,7 @@ router.delete("/:id", verifyToken, deleteCourse);
  *       404:
  *         description: Kurs nie znaleziony
  */
-router.put("/:id", verifyToken, updateCourse);
+router.put("/:id", verifyToken, upload.single("thumbnail"), updateCourse);
 
 
 

@@ -3,22 +3,30 @@ const Course = require('../models/course');
 
 const createCourse = async (req, res) => {
     try {
-        const { title, description, content } = req.body;
+        const { title, description, content, category, difficulty, duration, language } = req.body;
         const userId = req.user?.id;
 
         if (!userId) {
             return res.status(401).json({ error: "Unauthorized. No user found." });
         }
 
-        if (!title || !description || !content) {
-            return res.status(400).json({ error: "Title, description, and content are required." });
+        if (!title || !description || !content || !category || !difficulty || !duration || !language) {
+            return res.status(400).json({ error: "All fields are required." });
         }
 
         const newCourse = new Course({
             title,
             description,
             content,
-            userId: userId, 
+            category,
+            difficulty,
+            duration,
+            language,
+            userId,
+            thumbnail: req.file ? {
+                data: req.file.buffer,
+                contentType: req.file.mimetype
+            } : undefined
         });
 
         await newCourse.save();
@@ -30,8 +38,23 @@ const createCourse = async (req, res) => {
 
 const getCourses = async (req, res) => {
     try {
-        const courses = await Course.find().populate('instructor', 'name email');
-        res.json(courses);
+        const courses = await Course.find().select("_id title description content userId category difficulty duration language createdAt");
+
+        const formattedCourses = courses.map(course => ({
+            _id: course._id,
+            title: course.title,
+            description: course.description,
+            content: course.content,
+            userId: course.userId,
+            category: course.category,
+            difficulty: course.difficulty,
+            duration: course.duration,
+            language: course.language,
+            createdAt: course.createdAt,
+            thumbnailUrl: course.thumbnail ? `http://localhost:8000/course/${course._id}/thumbnail` : null 
+        }));
+
+        res.json(formattedCourses);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -51,7 +74,7 @@ const getCourseById = async (req, res) => {
 
 const updateCourse = async (req, res) => {
     try {
-        const { title, description, content } = req.body;
+        const { title, description, content, category, difficulty, duration, language } = req.body;
         const { id } = req.params;
         const userId = req.user?.id;
 
@@ -71,6 +94,16 @@ const updateCourse = async (req, res) => {
         if (title) course.title = title;
         if (description) course.description = description;
         if (content) course.content = content;
+        if (category) course.category = category;
+        if (difficulty) course.difficulty = difficulty;
+        if (duration) course.duration = duration;
+        if (language) course.language = language;
+        if (req.file) {
+            course.thumbnail = {
+                data: req.file.buffer,
+                contentType: req.file.mimetype
+            };
+        }
 
         await course.save();
         res.status(200).json({ message: "Course updated successfully", course });
