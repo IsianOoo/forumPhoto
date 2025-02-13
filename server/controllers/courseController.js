@@ -18,7 +18,7 @@ const createCourse = async (req, res) => {
             title,
             description,
             content,
-            userId: userId,
+            userId: userId, 
         });
 
         await newCourse.save();
@@ -51,25 +51,29 @@ const getCourseById = async (req, res) => {
 
 const updateCourse = async (req, res) => {
     try {
-        const { id } = req.params;
         const { title, description, content } = req.body;
+        const { id } = req.params;
         const userId = req.user?.id;
 
-        const course = await Course.findById(id).select('title description content userId');
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized. No user found." });
+        }
+
+        const course = await Course.findById(id);
         if (!course) {
-            return res.status(404).json({ error: "Course not found" });
+            return res.status(404).json({ error: "Course not found." });
         }
 
         if (course.userId.toString() !== userId) {
-            return res.status(403).json({ error: "You can only update your own courses" });
+            return res.status(403).json({ error: "You can only update your own courses." });
         }
 
-        course.title = title || course.title;
-        course.description = description || course.description;
-        course.content = content || course.content;
-        await course.save();
+        if (title) course.title = title;
+        if (description) course.description = description;
+        if (content) course.content = content;
 
-        res.json({ message: "Course updated successfully", course });
+        await course.save();
+        res.status(200).json({ message: "Course updated successfully", course });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -78,23 +82,26 @@ const updateCourse = async (req, res) => {
 const deleteCourse = async (req, res) => {
     try {
         const { id } = req.params;
-        const userId = req.user?.id; 
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized. No user found." });
+        }
 
         const course = await Course.findById(id);
         if (!course) {
-            return res.status(404).json({ error: "Course not found" });
+            return res.status(404).json({ error: "Course not found." });
         }
 
         if (course.userId.toString() !== userId) {
-            return res.status(403).json({ error: "You can only delete your own courses" });
+            return res.status(403).json({ error: "You can only delete your own courses." });
         }
 
         await course.deleteOne();
-        res.json({ message: "Course deleted successfully" });
+        res.status(200).json({ message: "Course deleted successfully" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
-
 
 module.exports = {deleteCourse, updateCourse, createCourse, getCourses, getCourseById };

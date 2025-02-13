@@ -5,46 +5,9 @@ const verifyToken = require('../middleware/authMiddleware');
 
 /**
  * @swagger
- * components:
- *   securitySchemes:
- *     bearerAuth:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
- *   schemas:
- *     Course:
- *       type: object
- *       required:
- *         - title
- *         - description
- *         - content
- *       properties:
- *         id:
- *           type: string
- *           description: ID kursu w MongoDB
- *         title:
- *           type: string
- *           description: Tytuł kursu
- *         description:
- *           type: string
- *           description: Opis kursu
- *         content:
- *           type: string
- *           description: Zawartość kursu
- *         instructor:
- *           type: string
- *           description: ID instruktora
- *         createdAt:
- *           type: string
- *           format: date-time
- *           description: Data utworzenia kursu
- */
-
-/**
- * @swagger
  * /course:
  *   post:
- *     summary: Dodaj nowy kurs
+ *     summary: Tworzenie nowego kursu
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -52,12 +15,26 @@ const verifyToken = require('../middleware/authMiddleware');
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Course'
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: Tytuł kursu
+ *               description:
+ *                 type: string
+ *                 description: Opis kursu
+ *               content:
+ *                 type: string
+ *                 description: Treść kursu
  *     responses:
  *       201:
- *         description: Kurs dodany pomyślnie
+ *         description: Kurs został utworzony
+ *       400:
+ *         description: Nieprawidłowe dane wejściowe
+ *       401:
+ *         description: Brak autoryzacji
  */
-router.use(verifyToken).post('/', createCourse);
+router.post("/", verifyToken, createCourse);
 
 /**
  * @swagger
@@ -91,43 +68,42 @@ router.get('/:id', getCourseById);
  * @swagger
  * /course/{id}:
  *   delete:
- *     summary: Usuń kurs
- *     description: Pozwala właścicielowi kursu usunąć go z bazy
+ *     summary: Usuwanie kursu
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - name: id
- *         in: path
+ *       - in: path
+ *         name: id
  *         required: true
+ *         description: ID kursu do usunięcia
  *         schema:
  *           type: string
- *         description: ID kursu do usunięcia
  *     responses:
  *       200:
  *         description: Kurs został pomyślnie usunięty
+ *       401:
+ *         description: Brak autoryzacji
  *       403:
- *         description: Użytkownik nie może usunąć tego kursu
+ *         description: Brak uprawnień do usunięcia kursu
  *       404:
  *         description: Kurs nie znaleziony
  */
-
-router.use(verifyToken).delete('/:id', deleteCourse);
+router.delete("/:id", verifyToken, deleteCourse);
 
 /**
  * @swagger
  * /course/{id}:
  *   put:
- *     summary: Aktualizuj kurs
- *     description: Pozwala właścicielowi kursu zmienić jego tytuł, opis i zawartość
+ *     summary: Aktualizacja kursu
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - name: id
- *         in: path
+ *       - in: path
+ *         name: id
  *         required: true
+ *         description: ID kursu do aktualizacji
  *         schema:
  *           type: string
- *         description: ID kursu do aktualizacji
  *     requestBody:
  *       required: true
  *       content:
@@ -142,19 +118,23 @@ router.use(verifyToken).delete('/:id', deleteCourse);
  *                 type: string
  *                 description: Nowy opis kursu
  *               content:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: Nowa zawartość kursu
+ *                 type: string
+ *                 description: Nowa treść kursu
  *     responses:
  *       200:
  *         description: Kurs został pomyślnie zaktualizowany
+ *       400:
+ *         description: Nieprawidłowe dane wejściowe
+ *       401:
+ *         description: Brak autoryzacji
  *       403:
- *         description: Użytkownik nie może edytować tego kursu
+ *         description: Brak uprawnień do edycji kursu
  *       404:
  *         description: Kurs nie znaleziony
  */
-router.use(verifyToken).put('/:id', updateCourse);
+router.put("/:id", verifyToken, updateCourse);
+
+
 
 
 module.exports = router;
