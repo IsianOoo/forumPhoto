@@ -1,5 +1,7 @@
 const Competition = require('../models/competition')
 const Application = require('../models/application')
+const ApplicationVotes = require('../models/applicationVotes')
+const Photo = require('../models/photo')
 const User = require('../models/user')
 const permitOnlyAdmin = require('../middleware/adminPermissionMiddleware');
 const cron = require('node-cron');
@@ -27,19 +29,26 @@ cron.schedule('*/10 * * * * *', async () => {
 });
 
 const createCompetition = async (req, res) => {
-	if (req.role!='admin') return res.status(403).json({ error: 'Forbidden' })
-	try {
-		const { title, description, prize, endDate } = req.body
+    try {
+        if (!req.user || req.user.role !== 'admin') {
+            return res.status(403).json({ error: 'Forbidden - Only admins can create competitions' });
+        }
 
-		if (!endDate || new Date(endDate) <= new Date()) {
-			return res.status(400).json({ error: 'Valid end date is required and should be in the future' })
-		}
-		const competition = await Competition.create({ title, description, endDate, prize, userId: req.userId })
-		res.json(competition)
-	} catch (error) {
-		res.status(400).json({ error: error.message })
-	}
-}
+        const { title, description, prize, endDate } = req.body;
+
+        if (!endDate || new Date(endDate) <= new Date()) {
+            return res.status(400).json({ error: 'Valid end date is required and should be in the future' });
+        }
+
+        const userId = req.user.id;
+
+        const competition = await Competition.create({title,description,endDate,prize,userId});
+
+        res.status(201).json({ message: 'Competition created successfully', competition });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
 const getCompetitions = async (req, res) => {
 	const competitions = await Competition.find()
@@ -63,11 +72,53 @@ const deleteCompetition = async (req, res) => {
 }
 
 const joinCompetition = async (req, res) => {
-	const { photoId } = req.body
-	await Competition.findById(req.params.id)
-	const application = await Application.create({ userId: req.userId, competitionId: req.params.id, photoId: photoId })
-	res.json()
-}
+    try {
+        const { title, description } = req.body;
+        const userId = req.user?.id;
+
+        if (!req.file) {
+            return res.status(400).json({ error: "Image is required to join the competition." });
+        }
+
+        const competition = await Competition.findById(req.params.id);
+        if (!competition) {
+            return res.status(404).json({ error: "Competition not found" });
+        }
+
+        const existingApplication = await Application.findOne({ 
+            userId: userId, 
+            competitionId: req.params.id 
+        });
+
+        if (existingApplication) {
+            return res.status(400).json({ error: "You have already joined this competition" });
+        }
+
+		const competitionPhoto = new Photo({
+			title,
+			description,
+			image: {
+				data: req.file.buffer,
+				contentType: req.file.mimetype
+			},
+			userId: userId,
+			competitionId: req.params.id 
+		});
+
+        await competitionPhoto.save();
+
+        const application = await Application.create({
+			userId: userId, 
+			competitionId: req.params.id, 
+			photoId: competitionPhoto._id
+		});
+
+        res.status(201).json({ message: "Successfully joined competition with photo", application });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
 const getApplications = async (req, res) => {
     const application = await Application.find({competitionId:req.params.id})
@@ -79,19 +130,38 @@ const getUsersApplications = async (req, res) =>{
     res.json({applications})
 }
 
-const applicationVote = async (req, res) =>{
-	const user = await User.findById({_id:req.userId})
-	const application = await Application.findById({_id:req.params.id})
-	const joined = application.votes.some((vote)=>{return vote._id == req.userId})
+const applicationVote = async (req, res) => {
+    try {
+        const { competitionId, photoId } = req.body;
+        const userId = req.user?.id;
 
-	if(joined){
-		return res.json({message: "You already voted"});
-	}
-	application.votes.push({_id: req.userId});
-	await application.save();
-	res.json({})
-}
+        const competition = await Competition.findById(competitionId);
+        if (!competition) {
+            return res.status(404).json({ error: "Competition not found" });
+        }
 
+        const application = await Application.findOne({ competitionId, photoId });
+        if (!application) {
+            return res.status(404).json({ error: "Photo not found in competition" });
+        }
+
+        if (application.userId.toString() === userId) {
+            return res.status(403).json({ error: "You cannot vote for your own photo" });
+        }
+
+        const existingVote = await ApplicationVotes.findOne({ userId, competitionId, photoId });
+        if (existingVote) {
+            return res.status(400).json({ error: "You have already voted for this photo" });
+        }
+
+        const vote = new ApplicationVotes({ userId, competitionId, photoId });
+        await vote.save();
+
+        res.status(201).json({ message: "Vote submitted successfully" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 module.exports = {
 	createCompetition,
 	getCompetitions,
