@@ -1,5 +1,5 @@
 const express = require('express');
-const { createCourse, getCourses, getCourseById } = require('../controllers/courseController');
+const {updateCourse, createCourse, getCourses, getCourseById, deleteCourse } = require('../controllers/courseController');
 const router = express.Router();
 const verifyToken = require('../middleware/authMiddleware');
 
@@ -86,5 +86,75 @@ router.get('/', getCourses);
  *         description: Szczegóły kursu
  */
 router.get('/:id', getCourseById);
+
+/**
+ * @swagger
+ * /course/{id}:
+ *   delete:
+ *     summary: Usuń kurs
+ *     description: Pozwala właścicielowi kursu usunąć go z bazy
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID kursu do usunięcia
+ *     responses:
+ *       200:
+ *         description: Kurs został pomyślnie usunięty
+ *       403:
+ *         description: Użytkownik nie może usunąć tego kursu
+ *       404:
+ *         description: Kurs nie znaleziony
+ */
+
+router.use(verifyToken).delete('/:id', deleteCourse);
+
+/**
+ * @swagger
+ * /course/{id}:
+ *   put:
+ *     summary: Aktualizuj kurs
+ *     description: Pozwala właścicielowi kursu zmienić jego tytuł, opis i zawartość
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID kursu do aktualizacji
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: Nowy tytuł kursu
+ *               description:
+ *                 type: string
+ *                 description: Nowy opis kursu
+ *               content:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Nowa zawartość kursu
+ *     responses:
+ *       200:
+ *         description: Kurs został pomyślnie zaktualizowany
+ *       403:
+ *         description: Użytkownik nie może edytować tego kursu
+ *       404:
+ *         description: Kurs nie znaleziony
+ */
+router.use(verifyToken).put('/:id', updateCourse);
+
 
 module.exports = router;

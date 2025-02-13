@@ -132,11 +132,11 @@ const getPhotoById = async (req, res) => {
     try {
         const photo = await Photo.findById(req.params.id);
         if (!photo) {
-            return res.status(404).json({ error: "Zdjęcie nie znalezione" });
+            return res.status(404).json({ error: "Photo not found" });
         }
 
         if (!photo.image || !photo.image.data) {
-            return res.status(500).json({ error: "Brak danych obrazu w bazie" });
+            return res.status(500).json({ error: "No image data entered" });
         }
 
         res.set('Content-Type', photo.image.contentType);
@@ -147,15 +147,52 @@ const getPhotoById = async (req, res) => {
 };
 
 const updatePhoto = async (req, res) => {
-    const { title, description, imageUrl } = req.body
-    const photo = await Photo.findByIdAndUpdate(req.params.id, { title, description, imageUrl }, { new: true })
-    res.json(photo)
-}
+    try {
+        const { id } = req.params;
+        const { title, description } = req.body;
+        const userId = req.user?.id;
+
+        const photo = await Photo.findById(id).select('title description userId');
+        if (!photo) {
+            return res.status(404).json({ error: "Photo not found" });
+        }
+
+        if (photo.userId.toString() !== userId) {
+            return res.status(403).json({ error: "You can only update your own photos" });
+        }
+
+        photo.title = title || photo.title;
+        photo.description = description || photo.description;
+        await photo.save();
+
+        res.json({ message: "Photo updated successfully", photo });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
 const deletePhoto = async (req, res) => {
-    await Photo.findByIdAndDelete(req.params.id)
-    res.json({ message: 'Photo deleted successfully' })
-}
+    try {
+        const { id } = req.params;
+        const userId = req.user?.id;
+        const userRole = req.user?.role;
+
+        const photo = await Photo.findById(id);
+        if (!photo) {
+            return res.status(404).json({ error: "Photo not found" });
+        }
+
+        if (photo.userId.toString() !== userId && userRole !== 'admin') {
+            return res.status(403).json({ error: "You can only delete your own photos unless you are an admin" });
+        }
+
+        await photo.deleteOne();
+        res.json({ message: "Photo deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
 const getPhotoComments = async (req, res) => {
     try {
@@ -172,7 +209,38 @@ const getPhotoComments = async (req, res) => {
 const deleteComment = async (req, res) => {
     try {
         const { photoId, commentId } = req.params;
-        const userId = req.user.id;
+        const userId = req.user?.id;
+        const userRole = req.user?.role;
+
+        const photo = await Photo.findById(photoId);
+        if (!photo) {
+            return res.status(404).json({ error: "Photo not found" });
+        }
+
+        const comment = photo.comments.id(commentId);
+        if (!comment) {
+            return res.status(404).json({ error: "Comment not found" });
+        }
+
+        if (comment.userId.toString() !== userId && userRole !== 'admin') {
+            return res.status(403).json({ error: "You can only delete your own comments unless you are an admin" });
+        }
+
+        photo.comments.pull(commentId);
+        await photo.save();
+
+        res.json({ message: "Comment deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+
+const updateComment = async (req, res) => {
+    try {
+        const { photoId, commentId } = req.params;
+        const { content } = req.body;
+        const userId = req.user?.id;
 
         const photo = await Photo.findById(photoId);
         if (!photo) {
@@ -185,16 +253,20 @@ const deleteComment = async (req, res) => {
         }
 
         if (comment.userId.toString() !== userId) {
-            return res.status(403).json({ error: "You can only delete your own comments" });
+            return res.status(403).json({ error: "You can only update your own comments" });
         }
 
-        photo.comments.pull(commentId);
+        if (!content || content.trim() === "") {
+            return res.status(400).json({ error: "Content cannot be empty" });
+        }
+
+        comment.content = content;
         await photo.save();
 
-        res.json({ message: "Comment deleted successfully" });
+        res.json({ message: "Comment updated successfully", comment });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-module.exports = {deleteComment, getPhotoComments, createPhoto,likePhoto,addComment, getPhotos, getPhotoById, updatePhoto, deletePhoto, upload,getPhotoImage}
+module.exports = {updateComment, deleteComment, getPhotoComments, createPhoto,likePhoto,addComment, getPhotos, getPhotoById, updatePhoto, deletePhoto, upload,getPhotoImage}

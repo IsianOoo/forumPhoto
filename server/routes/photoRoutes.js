@@ -1,5 +1,5 @@
 const express = require('express');
-const {getPhotoComments, likePhoto, addComment, getPhotoImage, createPhoto, getPhotos, getPhotoById, updatePhoto, deletePhoto, upload ,deleteComment} = require('../controllers/photoController');
+const {getPhotoComments, likePhoto, addComment, getPhotoImage, createPhoto, getPhotos, getPhotoById, updatePhoto, deletePhoto, upload ,deleteComment, updateComment} = require('../controllers/photoController');
 const router = express.Router();
 const verifyToken = require('../middleware/authMiddleware');
 
@@ -96,6 +96,7 @@ router.get('/', getPhotos);
  * /photo/{id}:
  *   put:
  *     summary: Aktualizuj zdjęcie
+ *     description: Pozwala właścicielowi zdjęcia zmienić jego tytuł i opis
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -104,6 +105,7 @@ router.get('/', getPhotos);
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID zdjęcia do aktualizacji
  *     requestBody:
  *       required: true
  *       content:
@@ -117,14 +119,11 @@ router.get('/', getPhotos);
  *               description:
  *                 type: string
  *                 description: Nowy opis zdjęcia
- *               imagePath:
- *                 type: string
- *                 description: Nowa ścieżka do zdjęcia
  *     responses:
  *       200:
- *         description: Zdjęcie zaktualizowane pomyślnie
- *       400:
- *         description: Błąd w danych wejściowych
+ *         description: Zdjęcie zostało pomyślnie zaktualizowane
+ *       403:
+ *         description: Użytkownik nie może edytować tego zdjęcia
  *       404:
  *         description: Zdjęcie nie znalezione
  */
@@ -135,6 +134,7 @@ router.use(verifyToken).put('/:id', updatePhoto);
  * /photo/{id}:
  *   delete:
  *     summary: Usuń zdjęcie
+ *     description: Pozwala właścicielowi zdjęcia usunąć je z bazy
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -143,9 +143,12 @@ router.use(verifyToken).put('/:id', updatePhoto);
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID zdjęcia do usunięcia
  *     responses:
  *       200:
- *         description: Zdjęcie zostało usunięte
+ *         description: Zdjęcie zostało pomyślnie usunięte
+ *       403:
+ *         description: Użytkownik nie może usunąć tego zdjęcia
  *       404:
  *         description: Zdjęcie nie znalezione
  */
@@ -265,5 +268,47 @@ router.get('/:id/comments', getPhotoComments);
  *         description: Zdjęcie lub komentarz nie znaleziony
  */
 router.delete('/:photoId/comment/:commentId', verifyToken, deleteComment);
+
+/**
+ * @swagger
+ * /photo/{photoId}/comment/{commentId}:
+ *   put:
+ *     summary: Aktualizuj komentarz
+ *     description: Pozwala właścicielowi komentarza zmienić jego treść
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: photoId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID zdjęcia, do którego należy komentarz
+ *       - name: commentId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID komentarza do aktualizacji
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *                 description: Nowa treść komentarza
+ *     responses:
+ *       200:
+ *         description: Komentarz został pomyślnie zaktualizowany
+ *       403:
+ *         description: Użytkownik nie może edytować tego komentarza
+ *       404:
+ *         description: Komentarz nie znaleziony
+ */
+router.put('/:photoId/comment/:commentId', verifyToken, updateComment);
+
 
 module.exports = router;
