@@ -57,19 +57,24 @@ const getPhotos = async (req, res) => {
 
 const likePhoto = async (req, res) => {
     try {
-        const photo = await Photo.findById(req.params.id);
+        const { id } = req.params;
+        const userId = req.user.id;
+
+        const photo = await Photo.findById(id);
         if (!photo) {
             return res.status(404).json({ error: "Photo not found" });
         }
 
-        if (!photo.likes.includes(req.userId)) {
-            photo.likes.push(req.userId); 
+        const likeIndex = photo.likes.indexOf(userId);
+
+        if (likeIndex === -1) {
+            photo.likes.push(userId);
         } else {
-            photo.likes = photo.likes.filter(id => id.toString() !== req.userId);
+            photo.likes.splice(likeIndex, 1);
         }
 
         await photo.save();
-        res.json({ message: "Photo liked/unliked successfully", likes: photo.likes.length });
+        res.status(200).json({ message: "Like status updated", likes: photo.likes.length });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -176,7 +181,7 @@ const deletePhoto = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.user?.id;
-        const userRole = req.user?.role;
+        const userRole = req.user?.role; 
 
         const photo = await Photo.findById(id);
         if (!photo) {

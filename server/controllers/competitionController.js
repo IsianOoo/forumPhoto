@@ -1,7 +1,7 @@
 const Competition = require('../models/competition')
 const Application = require('../models/application')
 const ApplicationVotes = require('../models/applicationVotes')
-const Photo = require('../models/photo')
+const CompetitionPhoto = require('../models/competitionPhoto');
 const User = require('../models/user')
 const permitOnlyAdmin = require('../middleware/adminPermissionMiddleware');
 const cron = require('node-cron');
@@ -71,55 +71,48 @@ const deleteCompetition = async (req, res) => {
 	res.json({ message: 'Competition deleted successfully' })
 }
 
-const joinCompetition = async (req, res) => {
+const joinCompetition = async (req, res) => { 
     try {
         const { title, description } = req.body;
         const userId = req.user?.id;
+        const competitionId = req.params.id;
 
-        if (!req.file) {
-            return res.status(400).json({ error: "Image is required to join the competition." });
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized. No user found." });
         }
 
-        const competition = await Competition.findById(req.params.id);
+        if (!title || !description || !req.file) {
+            return res.status(400).json({ error: "Title, description, and image are required." });
+        }
+
+        const competition = await Competition.findById(competitionId);
         if (!competition) {
             return res.status(404).json({ error: "Competition not found" });
         }
 
-        const existingApplication = await Application.findOne({ 
-            userId: userId, 
-            competitionId: req.params.id 
-        });
-
-        if (existingApplication) {
-            return res.status(400).json({ error: "You have already joined this competition" });
+        const existingPhoto = await CompetitionPhoto.findOne({ competitionId, userId });
+        if (existingPhoto) {
+            return res.status(400).json({ error: "You have already submitted a photo for this competition" });
         }
 
-		const competitionPhoto = new Photo({
-			title,
-			description,
-			image: {
-				data: req.file.buffer,
-				contentType: req.file.mimetype
-			},
-			userId: userId,
-			competitionId: req.params.id 
-		});
+        const competitionPhoto = new CompetitionPhoto({
+            title,
+            description,
+            image: {
+                data: req.file.buffer,
+                contentType: req.file.mimetype
+            },
+            userId: userId,
+            competitionId,
+        });
 
         await competitionPhoto.save();
-
-        const application = await Application.create({
-			userId: userId, 
-			competitionId: req.params.id, 
-			photoId: competitionPhoto._id
-		});
-
-        res.status(201).json({ message: "Successfully joined competition with photo", application });
+        res.status(201).json({ message: "Successfully joined competition", competitionPhoto });
     } catch (error) {
+        console.error("Błąd w joinCompetition:", error);
         res.status(500).json({ error: error.message });
     }
 };
-
-
 const getApplications = async (req, res) => {
     const application = await Application.find({competitionId:req.params.id})
     res.json({application})
@@ -162,7 +155,31 @@ const applicationVote = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+const getCompetitionPhotos = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const photos = await CompetitionPhoto.find({ competitionId: id })
+            .select('_id title description userId createdAt likes');
+
+        const formattedPhotos = photos.map(photo => ({
+            _id: photo._id,
+            title: photo.title,
+            description: photo.description,
+            imageUrl: `http://localhost:8000/competition/photo/${photo._id}/view`,
+            userId: photo.userId,
+            createdAt: photo.createdAt,
+            likes: photo.likes.length
+        }));
+
+        res.json(formattedPhotos);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 module.exports = {
+	getCompetitionPhotos,
 	createCompetition,
 	getCompetitions,
 	getCompetitionById,

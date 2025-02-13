@@ -1,8 +1,10 @@
 const express = require('express');
-const {joinCompetition, createCompetition, getCompetitions, getCompetitionById, applicationVote } = require('../controllers/competitionController');
+const {getCompetitionPhotos, joinCompetition, createCompetition, getCompetitions, getCompetitionById, applicationVote } = require('../controllers/competitionController');
 const router = express.Router();
 const verifyToken = require('../middleware/authMiddleware');
 const { upload } = require('../controllers/photoController');
+const multer = require('multer');
+
 
 /**
  * @swagger
@@ -129,7 +131,7 @@ router.get('/:id', getCompetitionById);
  *       500:
  *         description: Błąd serwera
  */
-router.post('/:id/join', verifyToken, upload.single('image'), joinCompetition);
+router.post('/:id/join', upload.single('image'), joinCompetition);
 
 /**
  * @swagger
@@ -166,5 +168,53 @@ router.post('/:id/join', verifyToken, upload.single('image'), joinCompetition);
  */
 router.post('/vote', verifyToken, applicationVote);
 
+/**
+ * @swagger
+ * /competition/{id}/photos:
+ *   get:
+ *     summary: Pobiera wszystkie zdjęcia powiązane z konkursem
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID konkursu
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista zdjęć w konkursie
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                     description: ID zdjęcia
+ *                   title:
+ *                     type: string
+ *                     description: Tytuł zdjęcia
+ *                   description:
+ *                     type: string
+ *                     description: Opis zdjęcia
+ *                   imageUrl:
+ *                     type: string
+ *                     description: URL obrazu
+ *                   userId:
+ *                     type: string
+ *                     description: ID użytkownika, który dodał zdjęcie
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                     description: Data dodania zdjęcia
+ *                   likes:
+ *                     type: integer
+ *                     description: Liczba polubień zdjęcia
+ *       404:
+ *         description: Konkurs nie znaleziony
+ */
+router.get('/:id/photos', getCompetitionPhotos);
 
 module.exports = router;
