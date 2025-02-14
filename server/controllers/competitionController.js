@@ -8,24 +8,27 @@ const cron = require('node-cron');
 
 cron.schedule('*/10 * * * * *', async () => {
 	try {
-		const endedCompetitions = await Competition.find({
-			endDate: { $lte: new Date() },
-			winner: { $exists: false }
-		});
+        const endedCompetitions = await Competition.find({
+            endDate: { $lte: new Date() },
+            winner: { $exists: false }
+        });
 
-		for (const competition of endedCompetitions) {
-			const applications = await Application.find({ competitionId: competition._id }).sort({ votes: -1 });
+        for (const competition of endedCompetitions) {
 
-			if (applications.length > 0) {
-				const winner = applications[0]; 
-				competition.winner = winner.userId; 
-				await competition.save();
-				console.log(`Winner announced for competition ${competition._id}`);
-			}
-		}
-	} catch (error) {
-		console.error('Error selecting winner:', error);
-	}
+            const applications = await CompetitionPhoto.find({ competitionId: competition._id }).sort({ "likes.length": -1 });
+
+            if (applications.length > 0) {
+                const winnerPhoto = applications[0];
+                competition.winner = winnerPhoto.userId;
+                competition.winnerPhotoId = winnerPhoto._id;
+                await competition.save();
+                console.log(` Winner announced for competition ${competition._id}: Photo ${winnerPhoto._id}`);
+            } else {
+            }
+        }
+    } catch (error) {
+        console.error('Error selecting winner:', error);
+    }
 });
 
 const createCompetition = async (req, res) => {
@@ -51,9 +54,28 @@ const createCompetition = async (req, res) => {
 };
 
 const getCompetitions = async (req, res) => {
-	const competitions = await Competition.find()
-	res.json(competitions)
-}
+    try {
+        const competitions = await Competition.find().lean(); 
+
+        for (let comp of competitions) {
+            if (comp.winner) { 
+                const winnerPhoto = await CompetitionPhoto.findOne({ 
+                    userId: comp.winner, 
+                    competitionId: comp._id 
+                }).select('_id');
+
+                if (winnerPhoto) {
+                    comp.winnerPhotoId = winnerPhoto._id; 
+                }
+            }
+        }
+
+        res.json(competitions);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
 const getCompetitionById = async (req, res) => {
 	const competition = await Competition.findById(req.params.id)
@@ -128,33 +150,31 @@ const applicationVote = async (req, res) => {
         const { competitionId, photoId } = req.body;
         const userId = req.user?.id;
 
-        const competition = await Competition.findById(competitionId);
-        if (!competition) {
-            return res.status(404).json({ error: "Competition not found" });
+        const photo = await CompetitionPhoto.findById(photoId);
+        if (!photo) {
+            return res.status(404).json({ error: "Photo not found" });
         }
 
-        const application = await Application.findOne({ competitionId, photoId });
-        if (!application) {
-            return res.status(404).json({ error: "Photo not found in competition" });
-        }
-
-        if (application.userId.toString() === userId) {
+        if (photo.userId.toString() === userId) {
             return res.status(403).json({ error: "You cannot vote for your own photo" });
         }
 
-        const existingVote = await ApplicationVotes.findOne({ userId, competitionId, photoId });
-        if (existingVote) {
-            return res.status(400).json({ error: "You have already voted for this photo" });
+        const alreadyVoted = photo.likes.includes(userId);
+
+        if (alreadyVoted) {
+            photo.likes = photo.likes.filter(id => id.toString() !== userId);
+            await photo.save();
+            return res.json({ message: "Vote removed", likes: photo.likes });
+        } else {
+            photo.likes.push(userId);
+            await photo.save();
+            return res.json({ message: "Vote added", likes: photo.likes });
         }
-
-        const vote = new ApplicationVotes({ userId, competitionId, photoId });
-        await vote.save();
-
-        res.status(201).json({ message: "Vote submitted successfully" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 const getCompetitionPhotos = async (req, res) => {
     try {
@@ -170,15 +190,59 @@ const getCompetitionPhotos = async (req, res) => {
             imageUrl: `http://localhost:8000/competition/photo/${photo._id}/view`,
             userId: photo.userId,
             createdAt: photo.createdAt,
-            likes: photo.likes.length
+            votes: photo.likes.length,
         }));
 
         res.json(formattedPhotos);
     } catch (error) {
+        console.error("Błąd pobierania zdjęć konkursowych:", error);
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
+    }
+};
+
+
+
+const getCompetitionPhoto = async (req, res) => {
+    try {
+        const { photoId } = req.params;
+
+        const photo = await CompetitionPhoto.findById(photoId);
+        if (!photo || !photo.image || !photo.image.data) {
+            return res.status(404).json({ error: "Photo not found" });
+        }
+
+        res.set({
+            'Content-Type': photo.image.contentType,
+            'Cache-Control': 'public, max-age=31536000'
+        });
+
+        res.send(photo.image.data);
+    } catch (error) {
+        console.error("Error in getCompetitionPhoto:", error);
         res.status(500).json({ error: error.message });
     }
 };
+
+const getUserVotes = async (req, res) => {
+    try {
+        const { id } = req.params; 
+        const userId = req.user?.id;
+
+        const votes = await ApplicationVotes.find({ userId, competitionId: id }).select('photoId');
+
+        res.json(votes);
+    } catch (error) {
+        console.error("Błąd pobierania głosów:", error);
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
+    }
+};
+
+
+
+
 module.exports = {
+    getUserVotes,
+    getCompetitionPhoto,
 	getCompetitionPhotos,
 	createCompetition,
 	getCompetitions,

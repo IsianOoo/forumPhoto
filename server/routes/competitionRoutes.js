@@ -1,5 +1,5 @@
 const express = require('express');
-const {getCompetitionPhotos, joinCompetition, createCompetition, getCompetitions, getCompetitionById, applicationVote } = require('../controllers/competitionController');
+const {getCompetitionPhoto, getCompetitionPhotos, joinCompetition, createCompetition, getCompetitions, getCompetitionById, applicationVote } = require('../controllers/competitionController');
 const router = express.Router();
 const verifyToken = require('../middleware/authMiddleware');
 const { upload } = require('../controllers/photoController');
@@ -216,5 +216,32 @@ router.post('/vote', verifyToken, applicationVote);
  *         description: Konkurs nie znaleziony
  */
 router.get('/:id/photos', getCompetitionPhotos);
+
+/**
+ * @swagger
+ * /competition/photo/{competitionId}/{userId}:
+ *   get:
+ *     summary: Pobierz zdjęcie zwycięzcy konkursu
+ *     description: Zwraca zdjęcie powiązane z użytkownikiem, który wygrał konkurs
+ *     parameters:
+ *       - in: path
+ *         name: competitionId
+ *         required: true
+ *         description: ID konkursu
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         description: ID użytkownika
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Zdjęcie zwycięzcy konkursu
+ *       404:
+ *         description: Zdjęcie nie znalezione
+ */
+router.get('/photo/:photoId/view', verifyToken, getCompetitionPhoto);
 
 module.exports = router;

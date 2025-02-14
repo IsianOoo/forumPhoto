@@ -65,6 +65,10 @@ const likePhoto = async (req, res) => {
             return res.status(404).json({ error: "Photo not found" });
         }
 
+        if (photo.userId.toString() === userId) {
+            return res.status(403).json({ error: "You cannot like your own photo" });
+        }
+
         const likeIndex = photo.likes.indexOf(userId);
 
         if (likeIndex === -1) {
