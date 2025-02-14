@@ -16,6 +16,9 @@ import EditPhoto from './components/EditPhoto'
 import CourseDetails from './components/CourseDetails'
 import AddCourse from './components/AddCourse'
 import EditCourse from './components/EditCourse'
+import CompetitionsPage from './pages/CompetitionPage'
+import AddCompetitionPhoto from './components/AddCompetitionPhoto'
+import CompetitionPhotos from './components/CompetitionPhotos'
 
 axios.defaults.baseURL = 'http://localhost:8000'
 axios.defaults.withCredentials = true
@@ -45,14 +48,7 @@ function App() {
 						</PrivateRoute>
 					}
 				/>
-				<Route
-					path='/competition'
-					element={
-						<PrivateRoute>
-							<div>Competition Page</div>
-						</PrivateRoute>
-					}
-				/>
+				
 				<Route
 					path='/profile'
 					element={
@@ -94,11 +90,35 @@ function App() {
 						</PrivateRoute>
 					}
 				/>
-        <Route
+				<Route
 					path='/course/edit/:id'
 					element={
 						<PrivateRoute>
 							<EditCourse />
+						</PrivateRoute>
+					}
+				/>
+				<Route
+					path='/competition'
+					element={
+						<PrivateRoute>
+							<CompetitionsPage/>
+						</PrivateRoute>
+					}
+				/>
+				<Route
+					path='/competition/:id/add-photo'
+					element={
+						<PrivateRoute>
+							<AddCompetitionPhoto/>
+						</PrivateRoute>
+					}
+				/>
+				<Route
+					path='/competition/:id/photos'
+					element={
+						<PrivateRoute>
+							<CompetitionPhotos/>
 						</PrivateRoute>
 					}
 				/>
